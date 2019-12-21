@@ -48,7 +48,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     agent.add(`I'm sorry, can you try again?`);
   }
 
-  function bookAppointment(agent) {
+  function makeRes(agent) {
     let [date, time, name, group, phone] = [agent.parameters.date, agent.parameters.time,
     agent.parameters.name, agent.parameters.groupN,
     agent.parameters.phone];
@@ -77,8 +77,39 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
       });
     }).then(() => {
       response.json({
-        'fulfillmentText': `Perfect I've got you down for ${shortDate} at ${shortTime},
-      see you later!` });
+        'fulfillmentText': `Perfect I've got you down for ${shortDate} at ${shortTime}, see you later!`
+      });
+
+      // // instead you can only use full response object if you want to respond with ssml or call transfer
+      // const responseObject = {
+      //   'fulfillmentText': `Perfect I've got you down for ${shortDate} at ${shortTime}, see you later!`,
+      //   "fulfillmentMessages": [
+      //     {
+      //       "platform": "TELEPHONY",
+      //       "telephonySynthesizeSpeech": {
+      //         "ssml":
+      //           `<speak>
+      //               voice Perfect I've got you down for ${shortDate} at ${shortTime}
+      //               <break time=0.2s />
+      //               see you later!
+      //             </speak>`
+      //       }
+      //     },
+      //     // {
+      //     //   "platform": "TELEPHONY",
+      //     //   "telephonyTransferCall": {
+      //     //     "phoneNumber": "+1989XXXXXX" //E.164 format phone number, US only at this point
+      //     //   }
+      //     // },
+      //     {
+      //       "text":
+      //         { "text": [`text Perfect I've got you down for ${shortDate} at ${shortTime}, see you later!`] }
+      //     }
+      //   ]
+      // };
+      // response.json(responseObject);
+
+
     }).catch(() => {
       agent.add(`I'm sorry I'm not able to take down your reservation but you'll be connected to the main line in a moment`);
       let callEvent = agent.setFollowupEvent('call_transfer_event');
@@ -89,7 +120,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   let intentMap = new Map();
   intentMap.set('Default Welcome Intent', welcome);
   intentMap.set('Default Fallback Intent', fallback);
-  intentMap.set('bookAppointment', bookAppointment);
+  intentMap.set('makeRes', makeRes);
   // intentMap.set('your intent name here', yourFunctionHandler);
   // intentMap.set('your intent name here', googleAssistantHandler);
   agent.handleRequest(intentMap);
